@@ -14,11 +14,18 @@ const Faucet = () => {
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          entry.target.classList.add('animate-fade-in');
+          // Add a small random delay for a more natural feel
+          const delay = Math.random() * 150;
+          setTimeout(() => {
+            entry.target.classList.add('animate-fade-in');
+          }, delay);
           observer.unobserve(entry.target);
         }
       }
-    }, { threshold: 0.1 });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px' // Start animation slightly before element is in view
+    });
 
     const elements = document.querySelectorAll('.animate-on-scroll');
     for (const el of elements) {
@@ -76,14 +83,14 @@ const Faucet = () => {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="animate-on-scroll opacity-0" style={{ animationDelay: '100ms' }}>
+            <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '100ms' }}>
               <TokenFaucet
                 tokenType="PT"
                 onClaim={() => handleClaim('PT')}
                 isLoading={isClaimingPT}
               />
             </div>
-            <div className="animate-on-scroll opacity-0" style={{ animationDelay: '200ms' }}>
+            <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '200ms' }}>
               <TokenFaucet
                 tokenType="YT"
                 onClaim={() => handleClaim('YT')}
@@ -96,19 +103,19 @@ const Faucet = () => {
         <div className="glass rounded-2xl p-6 animate-on-scroll opacity-0">
           <h2 className="text-xl font-bold mb-4">How to use REYU</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 animate-on-scroll opacity-0" style={{ animationDelay: '100ms' }}>
+            <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 animate-on-scroll opacity-0" style={{ transitionDelay: '100ms' }}>
               <div className="text-lg font-medium text-blue-400 mb-2">1. Get Tokens</div>
               <p className="text-blue-50/80">
                 Claim test tokens from the faucet to start experimenting with the platform.
               </p>
             </div>
-            <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 animate-on-scroll opacity-0" style={{ animationDelay: '200ms' }}>
+            <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 animate-on-scroll opacity-0" style={{ transitionDelay: '200ms' }}>
               <div className="text-lg font-medium text-blue-400 mb-2">2. Visit Dashboard</div>
               <p className="text-blue-50/80">
                 Go to your dashboard to see your token balances and transaction history.
               </p>
             </div>
-            <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 animate-on-scroll opacity-0" style={{ animationDelay: '300ms' }}>
+            <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 animate-on-scroll opacity-0" style={{ transitionDelay: '300ms' }}>
               <div className="text-lg font-medium text-blue-400 mb-2">3. Explore Marketplace</div>
               <p className="text-blue-50/80">
                 Browse the marketplace and purchase items using your YT tokens.

@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import ReyuLogo from './ReyuLogo';
+import { WalletConnectButton } from './XellarProvider';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -22,7 +23,7 @@ const Navbar = () => {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
-      <div className="glass rounded-2xl max-w-7xl mx-auto glow-box">
+      <div className="glass rounded-2xl max-w-7xl mx-auto">
         <div className="flex justify-between items-center py-3 px-4">
           <Link to="/" className="flex items-center gap-2">
             <ReyuLogo className="h-6 w-6" />
@@ -43,7 +44,7 @@ const Navbar = () => {
               >
                 {item.name}
                 {item.soon && (
-                  <span className="absolute -top-3 -right-10 text-xs px-1.5 py-0.5 bg-indigo-500 text-white rounded-full pulse-hot">
+                  <span className="absolute -top-2 -right-5 text-xs px-1.5 py-0.5 bg-indigo-500 text-white rounded-full">
                     Soon
                   </span>
                 )}
@@ -55,9 +56,7 @@ const Navbar = () => {
                 <Link to="/dashboard">Launch App</Link>
               </Button>
             ) : (
-              <Button className="bg-blue-500 text-white rounded-full">
-                Connect Wallet
-              </Button>
+              <WalletConnectButton />
             )}
           </div>
 
@@ -96,9 +95,9 @@ const Navbar = () => {
                   <Link to="/dashboard" onClick={() => setIsOpen(false)}>Launch App</Link>
                 </Button>
               ) : (
-                <Button className="bg-blue-500 text-white w-full rounded-full mt-2">
-                  Connect Wallet
-                </Button>
+                <div className="mt-2">
+                  <WalletConnectButton />
+                </div>
               )}
             </div>
           </div>

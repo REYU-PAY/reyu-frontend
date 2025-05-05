@@ -7,11 +7,28 @@ import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
 import TokenBalance from '@/components/TokenBalance';
 import { ArrowUp, ArrowDown } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Define token types
+type TokenType = 'USDC' | 'IDRX';
 
 const Dashboard = () => {
   const { toast } = useToast();
   const [ptBalance, setPtBalance] = useState("1,000.00");
   const [ytBalance, setYtBalance] = useState("75.25");
+
+  // Token balances
+  const [usdcBalance, setUsdcBalance] = useState("5,000.00");
+  const [idrxBalance, setIdrxBalance] = useState("75,000,000.00");
+
+  // Selected token for deposit
+  const [selectedToken, setSelectedToken] = useState<TokenType>('USDC');
 
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
@@ -26,11 +43,18 @@ const Dashboard = () => {
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          entry.target.classList.add('animate-fade-in');
+          // Add a small random delay for a more natural feel
+          const delay = Math.random() * 150;
+          setTimeout(() => {
+            entry.target.classList.add('animate-fade-in');
+          }, delay);
           observer.unobserve(entry.target);
         }
       }
-    }, { threshold: 0.1 });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px' // Start animation slightly before element is in view
+    });
 
     for (const el of document.querySelectorAll('.animate-on-scroll')) {
       observer.observe(el);
@@ -47,7 +71,13 @@ const Dashboard = () => {
     setAmount('');
     setPreviewPT('0.00');
     setPreviewYT('0.00');
+    setSelectedToken('USDC'); // Default to USDC when opening the dialog
     setIsDepositOpen(true);
+  };
+
+  // Get the current balance of the selected token
+  const getSelectedTokenBalance = (): string => {
+    return selectedToken === 'USDC' ? usdcBalance : idrxBalance;
   };
 
   const handleWithdraw = () => {
@@ -61,7 +91,7 @@ const Dashboard = () => {
   const updateWithdrawPreview = (value: string) => {
     setAmount(value);
 
-    if (!value || isNaN(Number(value)) || Number(value) <= 0) {
+    if (!value || Number.isNaN(Number(value)) || Number(value) <= 0) {
       setWithdrawFee('0.00');
       setWithdrawNet('0.00');
       return;
@@ -86,6 +116,16 @@ const Dashboard = () => {
       return;
     }
 
+    // Check if amount exceeds balance
+    const tokenBalance = Number.parseFloat(getSelectedTokenBalance().replace(/,/g, ''));
+    if (Number(value) > tokenBalance) {
+      toast({
+        title: "Warning",
+        description: `Amount exceeds your ${selectedToken} balance`,
+        variant: "destructive"
+      });
+    }
+
     // PT is 1:1 with deposit amount
     setPreviewPT(Number(value).toFixed(2));
 
@@ -99,6 +139,17 @@ const Dashboard = () => {
       toast({
         title: "Invalid amount",
         description: "Please enter a valid positive number",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if user has enough balance of the selected token
+    const tokenBalance = Number.parseFloat(getSelectedTokenBalance().replace(/,/g, ''));
+    if (Number(amount) > tokenBalance) {
+      toast({
+        title: "Insufficient balance",
+        description: `Your ${selectedToken} balance is not enough for this deposit`,
         variant: "destructive"
       });
       return;
@@ -119,9 +170,24 @@ const Dashboard = () => {
       maximumFractionDigits: 2
     }));
 
+    // Update the selected token balance
+    if (selectedToken === 'USDC') {
+      const newBalance = tokenBalance - Number(amount);
+      setUsdcBalance(newBalance.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }));
+    } else {
+      const newBalance = tokenBalance - Number(amount);
+      setIdrxBalance(newBalance.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }));
+    }
+
     toast({
       title: "Deposit successful",
-      description: `You have deposited ${amount} PT and received ${ytEarned.toFixed(2)} YT`,
+      description: `You have deposited ${amount} ${selectedToken} and received ${ytEarned.toFixed(2)} YT`,
     });
 
     setIsDepositOpen(false);
@@ -283,17 +349,44 @@ const Dashboard = () => {
             <DialogTitle>Deposit Asset</DialogTitle>
           </DialogHeader>
           <div className="py-4">
+            {/* Token Selection */}
+            <div className="mb-4">
+              <label htmlFor="token-select" className="block text-sm font-medium mb-2">
+                Select Token
+              </label>
+              <Select
+                value={selectedToken}
+                onValueChange={(value: TokenType) => setSelectedToken(value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select token" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USDC">USDC</SelectItem>
+                  <SelectItem value="IDRX">IDRX</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-400 mt-1">
+                Balance: {getSelectedTokenBalance()} {selectedToken}
+              </p>
+            </div>
+
             <label htmlFor="amount" className="block text-sm font-medium mb-2">
-              Amount to deposit
+              Amount to deposit ({selectedToken})
             </label>
-            <Input
-              id="amount"
-              value={amount}
-              onChange={(e) => updatePreview(e.target.value)}
-              type="number"
-              placeholder="0.00"
-              className="w-full"
-            />
+            <div className="relative">
+              <Input
+                id="amount"
+                value={amount}
+                onChange={(e) => updatePreview(e.target.value)}
+                type="number"
+                placeholder="0.00"
+                className="w-full pr-16"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <span className="text-gray-400">{selectedToken}</span>
+              </div>
+            </div>
             <div className="mt-4 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -314,7 +407,7 @@ const Dashboard = () => {
             <Button variant="outline" onClick={() => setIsDepositOpen(false)}>Cancel</Button>
             <Button
               onClick={handleDepositSubmit}
-              className="bg-reyu-blue hover:bg-reyu-blue-dark text-white animated-button"
+              className="bg-reyu-blue text-white"
             >
               Deposit
             </Button>
@@ -377,7 +470,7 @@ const Dashboard = () => {
             <Button variant="outline" onClick={() => setIsWithdrawOpen(false)}>Cancel</Button>
             <Button
               onClick={handleWithdrawSubmit}
-              className="bg-reyu-blue hover:bg-reyu-blue-dark text-white animated-button"
+              className="bg-reyu-blue text-white"
             >
               Withdraw
             </Button>

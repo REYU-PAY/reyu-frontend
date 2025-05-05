@@ -80,11 +80,18 @@ const Marketplace = () => {
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          entry.target.classList.add('animate-fade-in');
+          // Add a small random delay for a more natural feel
+          const delay = Math.random() * 150;
+          setTimeout(() => {
+            entry.target.classList.add('animate-fade-in');
+          }, delay);
           observer.unobserve(entry.target);
         }
       }
-    }, { threshold: 0.1 });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px' // Start animation slightly before element is in view
+    });
 
     const elements = document.querySelectorAll('.animate-on-scroll');
     for (const el of elements) {
@@ -143,7 +150,7 @@ const Marketplace = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {marketplaceItems.map((item, index) => (
-            <div key={item.id} className="animate-on-scroll opacity-0" style={{ animationDelay: `${index * 100}ms` }}>
+            <div key={item.id} className="animate-on-scroll opacity-0" style={{ transitionDelay: `${index * 80}ms` }}>
               <MarketplaceItem
                 title={item.title}
                 description={item.description}
