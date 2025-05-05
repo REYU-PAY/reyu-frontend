@@ -1,0 +1,303 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 230 30% 7%;
+    --foreground: 210 20% 98%;
+
+    --card: 224 32% 12%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 224 32% 10%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 196 80% 55%;
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 224 30% 15%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 225 25% 16%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 228 96% 77%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 225 30% 18%;
+    --input: 225 30% 18%;
+    --ring: 196 83% 49%;
+
+    --radius: 1rem;
+
+    /* Font family variables */
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Outfit', sans-serif;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  /* Apply premium fonts */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+  }
+
+  body, p, button, input, textarea, select {
+    font-family: var(--font-body);
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(circle at top right,
+        rgba(110, 142, 251, 0.15),
+        rgba(0, 0, 0, 0) 50%
+      ),
+      radial-gradient(circle at bottom left,
+        rgba(149, 120, 255, 0.1),
+        rgba(0, 0, 0, 0) 50%
+      ),
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+    background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+    background-attachment: fixed;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Static background overlay */
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(110, 142, 251, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(149, 120, 255, 0.05) 0%, transparent 50%);
+    z-index: -1;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-[rgba(25,30,50,0.6)] backdrop-blur-md border border-white/10 relative overflow-hidden;
+  }
+
+  .glass-dark {
+    @apply bg-[rgba(20,25,45,0.75)] backdrop-blur-md border border-white/10 relative overflow-hidden;
+  }
+
+  .silver-gradient {
+    @apply bg-gradient-to-r from-slate-300 via-slate-200 to-slate-100 bg-clip-text text-transparent;
+    background-size: 200% auto;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  .blue-gradient {
+    @apply bg-gradient-to-r from-indigo-400 via-blue-500 to-blue-400 bg-clip-text text-transparent;
+    background-size: 200% auto;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  .glow-text {
+    text-shadow: 0 0 15px rgba(124, 158, 255, 0.5);
+  }
+
+  .glow-box {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glow-box::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(124, 158, 255, 0.1) 0%, transparent 70%);
+    transform: rotate(0deg);
+    animation: rotate-glow 15s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .card-hover {
+    /* Hover animation removed */
+  }
+
+  /* Button with animated rotating line */
+  .animated-button {
+    @apply relative overflow-hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .animated-button::before {
+    content: '';
+    @apply absolute inset-0 bg-transparent;
+    background: linear-gradient(90deg, transparent, rgba(124, 158, 255, 0.3), transparent);
+    transform: translateX(-100%);
+    animation: shine 3s infinite;
+  }
+
+  .animated-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 25px -5px rgba(110, 142, 251, 0.4);
+  }
+
+  .animated-button:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* Scroll animation */
+  .animate-on-scroll {
+    opacity: 0;
+    transition: opacity 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                transform 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                filter 0.9s ease;
+    transform: translateY(40px);
+    filter: blur(5px);
+  }
+
+  .animate-on-scroll.animate-fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+
+  /* Floating animation */
+  .floating {
+    animation: floating 4s ease-in-out infinite;
+  }
+
+  /* Mouse trail gradient */
+  .gradient-blob {
+    @apply fixed pointer-events-none opacity-20 blur-3xl;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(-45deg, #6e8efb, #9578ff);
+    z-index: -1;
+  }
+
+  /* Card shine effect */
+  .shine {
+    /* Shine effect removed */
+  }
+
+  /* Recent transaction item */
+  .transaction-item {
+    @apply flex items-center justify-between px-4 py-2 rounded-lg;
+  }
+
+  /* Pulse animation for hot items */
+  .pulse-hot {
+    animation: pulse-hot 2s infinite;
+  }
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  20% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes floating {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes shine-effect {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-hot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Add mouse trail effect */
+@keyframes fadeOut {
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes rotate-glow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}

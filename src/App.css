@@ -1,0 +1,49 @@
+
+#root {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em rgba(110, 142, 251, 0.8));
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em rgba(149, 120, 255, 0.8));
+}
+
+/* Update mouse cursor with custom cursor */
+.custom-cursor {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  backdrop-filter: invert(100%);
+  mix-blend-mode: difference;
+  transition: transform 0.2s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 15, 20, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(110, 142, 251, 0.5);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(110, 142, 251, 0.8);
+}
