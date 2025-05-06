@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
 import TokenBalance from '@/components/TokenBalance';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, Wallet } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -14,18 +14,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-// Define token types
-type TokenType = 'USDC' | 'IDRX';
+import { useAccount } from 'wagmi';
+import { useTokenBalance, TokenType } from '@/hooks/use-token-balance';
 
 const Dashboard = () => {
   const { toast } = useToast();
+  const { address, isConnected } = useAccount();
   const [ptBalance, setPtBalance] = useState("1,000.00");
   const [ytBalance, setYtBalance] = useState("75.25");
 
-  // Token balances
-  const [usdcBalance, setUsdcBalance] = useState("5,000.00");
-  const [idrxBalance, setIdrxBalance] = useState("75,000,000.00");
+  // Get real token balances using wagmi hooks
+  const {
+    balance: usdcBalance,
+    isLoading: isLoadingUsdc
+  } = useTokenBalance('USDC', isConnected ? address : undefined);
+
+  const {
+    balance: idrxBalance,
+    isLoading: isLoadingIdrx,
+    error: idrxError,
+    tokenAddress: idrxTokenAddress
+  } = useTokenBalance('IDRX', isConnected ? address : undefined);
+
+  // Log errors for debugging
+  useEffect(() => {
+    if (idrxError) {
+      console.error('IDRX Balance Error:', idrxError);
+      console.log('IDRX Token Address:', idrxTokenAddress);
+      console.log('Wallet Connected:', isConnected);
+      console.log('Wallet Address:', address);
+    }
+  }, [idrxError, idrxTokenAddress, isConnected, address]);
 
   // Selected token for deposit
   const [selectedToken, setSelectedToken] = useState<TokenType>('USDC');
@@ -170,20 +189,7 @@ const Dashboard = () => {
       maximumFractionDigits: 2
     }));
 
-    // Update the selected token balance
-    if (selectedToken === 'USDC') {
-      const newBalance = tokenBalance - Number(amount);
-      setUsdcBalance(newBalance.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }));
-    } else {
-      const newBalance = tokenBalance - Number(amount);
-      setIdrxBalance(newBalance.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }));
-    }
+    // No need to manually update token balances as they will be updated by the hooks
 
     toast({
       title: "Deposit successful",
@@ -246,46 +252,68 @@ const Dashboard = () => {
         <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
         <p className="text-gray-600 mb-8">Monitor and manage your REYU tokens</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-on-scroll opacity-0">
-          {/* Principal Token Card */}
-          <TokenBalance
-            tokenType="PT"
-            balance={ptBalance}
-          />
+        {/* Balance Card */}
+        <div className="glass rounded-xl p-6 mb-8 animate-on-scroll opacity-0">
+          <h3 className="text-xl font-semibold mb-4 blue-gradient">Balance</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div className="flex items-center gap-4 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+              <div className="bg-blue-500/20 p-3 rounded-full">
+                <Wallet className="h-6 w-6 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">USDC Balance</p>
+                <p className="text-xl font-semibold">
+                  {isLoadingUsdc
+                    ? 'Loading...'
+                    : !isConnected
+                      ? '0.00 USDC'
+                      : `${usdcBalance} USDC`
+                  }
+                </p>
+                {!isConnected && (
+                  <p className="text-xs text-amber-400 mt-1">
+                    Connect wallet to view balance
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+              <div className="bg-blue-500/20 p-3 rounded-full">
+                <Wallet className="h-6 w-6 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">IDRX Balance</p>
+                <p className="text-xl font-semibold">
+                  {isLoadingIdrx
+                    ? 'Loading...'
+                    : idrxError
+                      ? '0.00 IDRX'
+                      : `${idrxBalance} IDRX`
+                  }
+                </p>
+                {idrxError && (
+                  <p className="text-xs text-amber-400 mt-1">
+                    {!isConnected
+                      ? 'Connect wallet to view balance'
+                      : 'Unable to fetch IDRX balance'
+                    }
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
 
-          {/* Yield Token Card */}
-          <TokenBalance
-            tokenType="YT"
-            balance={ytBalance}
-            onDeposit={handleDeposit}
-          />
-        </div>
-
-        {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 animate-on-scroll opacity-0">
-          {/* Deposit Card */}
-          <div className="glass rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-4 silver-gradient">Deposit Assets</h3>
-            <p className="text-blue-50/80 mb-4">
-              Deposit your crypto assets and receive Principal Tokens (PT) and Yield Tokens (YT).
-            </p>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4">
             <Button
-              className="flex items-center gap-2 bg-blue-500 text-white"
+              className="flex items-center gap-2 bg-blue-500 text-white flex-1"
               onClick={handleDeposit}
             >
               <ArrowDown size={16} />
               Deposit Asset
             </Button>
-          </div>
-
-          {/* Withdraw Card */}
-          <div className="glass rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-4 silver-gradient">Withdraw Principal</h3>
-            <p className="text-blue-50/80 mb-4">
-              Withdraw your principal by redeeming your PT tokens. Hold for 30 days to avoid fees.
-            </p>
             <Button
-              className="flex items-center gap-2 bg-blue-500 text-white"
+              className="flex items-center gap-2 bg-blue-500 text-white flex-1"
               onClick={handleWithdraw}
             >
               <ArrowUp size={16} />
@@ -294,6 +322,23 @@ const Dashboard = () => {
           </div>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-on-scroll opacity-0">
+          {/* Principal Token Card */}
+          <TokenBalance
+            tokenType="pRYU"
+            balance={ptBalance}
+          />
+
+          {/* Yield Token Card */}
+          <TokenBalance
+            tokenType="yRYU"
+            balance={ytBalance}
+            onDeposit={handleDeposit}
+          />
+        </div>
+
+
+
         {/* Transaction History Section */}
         <div className="mt-12 animate-on-scroll opacity-0">
           <h2 className="text-2xl font-bold mb-4">Recent Transactions</h2>
@@ -301,28 +346,28 @@ const Dashboard = () => {
             <div className="py-4 border-b">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium">Deposit PT</p>
+                  <p className="font-medium">Deposit pRYU</p>
                   <p className="text-sm text-gray-600">2025-05-05 10:23 AM</p>
                   <div className="mt-1 text-xs text-gray-500">
                     <span className="bg-muted px-2 py-0.5 rounded-full">TxHash: 0x8f2...3e21</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-green-600 font-medium">+500.00 PT</div>
-                  <div className="text-green-500 text-xs">+25.00 YT Generated</div>
+                  <div className="text-green-600 font-medium">+500.00 pRYU</div>
+                  <div className="text-green-500 text-xs">+25.00 yRYU Generated</div>
                 </div>
               </div>
             </div>
             <div className="py-4 border-b">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium">YT Generated</p>
+                  <p className="font-medium">yRYU Generated</p>
                   <p className="text-sm text-gray-600">2025-05-05 10:23 AM</p>
                   <div className="mt-1 text-xs text-gray-500">
                     <span className="bg-muted px-2 py-0.5 rounded-full">Deposit Reward</span>
                   </div>
                 </div>
-                <div className="text-green-600 font-medium">+25.00 YT</div>
+                <div className="text-green-600 font-medium">+25.00 yRYU</div>
               </div>
             </div>
             <div className="py-4">
@@ -335,7 +380,7 @@ const Dashboard = () => {
                     <span className="bg-muted px-2 py-0.5 rounded-full ml-1">TxHash: 0x4a7...9b12</span>
                   </div>
                 </div>
-                <div className="text-red-600 font-medium">-15.75 YT</div>
+                <div className="text-red-600 font-medium">-15.75 yRYU</div>
               </div>
             </div>
           </div>
@@ -367,7 +412,10 @@ const Dashboard = () => {
                 </SelectContent>
               </Select>
               <p className="text-xs text-gray-400 mt-1">
-                Balance: {getSelectedTokenBalance()} {selectedToken}
+                Balance: {selectedToken === 'USDC' ?
+                  (isLoadingUsdc ? 'Loading...' : usdcBalance) :
+                  (isLoadingIdrx ? 'Loading...' : idrxBalance)
+                } {selectedToken}
               </p>
             </div>
 
@@ -391,16 +439,16 @@ const Dashboard = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-gray-400">You will receive:</p>
-                  <p className="text-blue-400 font-medium">{previewPT} PT</p>
+                  <p className="text-blue-400 font-medium">{previewPT} pRYU</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Yield tokens:</p>
-                  <p className="text-blue-400 font-medium">{previewYT} YT</p>
+                  <p className="text-blue-400 font-medium">{previewYT} yRYU</p>
                 </div>
               </div>
             </div>
             <p className="text-blue-400 text-sm mt-2">
-              You will receive 5% of your deposit as YT immediately
+              You will receive 5% of your deposit as yRYU immediately
             </p>
           </div>
           <DialogFooter>
@@ -419,7 +467,7 @@ const Dashboard = () => {
       <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
         <DialogContent className="glass-dark sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Withdraw PT</DialogTitle>
+            <DialogTitle>Withdraw pRYU</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <label htmlFor="amount" className="block text-sm font-medium mb-2">
@@ -439,11 +487,11 @@ const Dashboard = () => {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-400">Amount:</span>
-                  <span className="text-sm font-medium">{amount || '0.00'} PT</span>
+                  <span className="text-sm font-medium">{amount || '0.00'} pRYU</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-400">Early Withdrawal Fee (5%):</span>
-                  <span className="text-sm font-medium text-amber-500">-{withdrawFee} PT</span>
+                  <span className="text-sm font-medium text-amber-500">-{withdrawFee} pRYU</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-400">Network Fee:</span>
@@ -456,7 +504,7 @@ const Dashboard = () => {
                 <div className="border-t border-gray-700 pt-2 mt-2">
                   <div className="flex justify-between">
                     <span className="text-sm font-medium">You will receive:</span>
-                    <span className="text-sm font-medium text-blue-400">{withdrawNet} PT</span>
+                    <span className="text-sm font-medium text-blue-400">{withdrawNet} pRYU</span>
                   </div>
                 </div>
               </div>

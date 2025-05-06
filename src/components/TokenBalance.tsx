@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
 interface TokenBalanceProps {
-  tokenType: 'PT' | 'YT';
+  tokenType: 'pRYU' | 'yRYU';
   balance: string;
   onDeposit?: () => void;
   onWithdraw?: () => void;
@@ -17,13 +17,13 @@ const TokenBalance: React.FC<TokenBalanceProps> = ({
   onDeposit,
   onWithdraw
 }) => {
-  const isYieldToken = tokenType === 'YT';
+  const isYieldToken = tokenType === 'yRYU';
 
   return (
     <Card className="glass h-full animate-fade-in">
       <CardHeader className="pb-2">
         <CardTitle className={`${isYieldToken ? 'blue-gradient' : 'silver-gradient'} glow-text`}>
-          {isYieldToken ? 'Yield Token (YT)' : 'Principal Token (PT)'}
+          {isYieldToken ? 'Yield Token (yRYU)' : 'Principal Token (pRYU)'}
         </CardTitle>
         <CardDescription>
           {isYieldToken
